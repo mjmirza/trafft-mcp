@@ -1,0 +1,46 @@
+{
+  "name": "trafft-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for the Trafft booking platform. Talk to your Trafft calendar from any MCP client.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "trafft",
+    "booking",
+    "scheduling",
+    "appointments",
+    "calendar",
+    "claude"
+  ],
+  "bin": {
+    "trafft-mcp": "./build/index.js"
+  },
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"import('node:fs').then(fs => fs.chmodSync('build/index.js', 0o755))\"",
+    "watch": "tsc --watch",
+    "start": "node build/index.js",
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+    "audit": "node build/audit.js",
+    "audit:deep": "node build/audit.js --deep",
+    "deadcode": "npx -y fallow@2.88.2 dead-code"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^17.4.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

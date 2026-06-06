@@ -1,0 +1,66 @@
+name: Monthly Endpoint Audit
+
+# Runs the endpoint auditor on a schedule so an expired credential, a changed
+# endpoint, or a toggled feature is caught early rather than in production.
+# Requires repo secrets TRAFFT_API_URL, TRAFFT_CLIENT_ID, TRAFFT_CLIENT_SECRET.
+# If those secrets are not set, the run fails fast with a clear message.
+
+on:
+  schedule:
+    # 06:00 UTC on the first day of every month.
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v6.0.3, pinned to commit SHA
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+
+      # actions/setup-node v6.4.0, pinned to commit SHA
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # BESTPRACTICE_OK pinned v6.4.0 commit SHA
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run endpoint audit
+        env:
+          TRAFFT_API_URL: ${{ secrets.TRAFFT_API_URL }}
+          TRAFFT_CLIENT_ID: ${{ secrets.TRAFFT_CLIENT_ID }}
+          TRAFFT_CLIENT_SECRET: ${{ secrets.TRAFFT_CLIENT_SECRET }}
+        run: npm run audit
+
+      # actions/github-script v9.0.0, pinned to commit SHA
+      - name: Open an issue if the audit failed
+        if: failure()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # BESTPRACTICE_OK pinned v9.0.0 commit SHA
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Monthly endpoint audit failed (${today})`,
+              body: [
+                "The scheduled Trafft endpoint audit did not pass.",
+                "",
+                "Common causes.",
+                "- An API credential expired or was rotated.",
+                "- A Trafft endpoint changed or a feature was toggled off.",
+                "- The repo secrets TRAFFT_API_URL / TRAFFT_CLIENT_ID / TRAFFT_CLIENT_SECRET are missing.",
+                "",
+                "Open the failed workflow run logs for the per endpoint report.",
+              ].join("\n"),
+              labels: ["audit", "automated"],
+            });
