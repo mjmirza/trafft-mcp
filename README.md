@@ -85,6 +85,9 @@ Add your credentials.
 ```bash
 cp .env.example .env
 # open .env and paste your three values
+
+[![OpenRoots ORA 2.3](https://openroots.org/badge/ora.svg)](https://openroots.org/licenses/ora/2.3)
+
 ```
 
 Your `.env` is private. It is gitignored, never committed, and never leaves your machine.
