@@ -5,38 +5,48 @@ import { errorResult, textResult } from "../util.js";
 
 export function registerCouponTools(server: McpServer, client: TrafftClient): void {
   server.tool(
-    "list_coupons",
-    "List all coupon codes with their discount and usage stats. Requires the Coupons feature.",
-    {},
-    async () => {
-      try {
-        return textResult(await client.get(`/coupons`));
-      } catch (e) {
-        return errorResult(e);
-      }
-    },
-  );
-
-  server.tool(
     "create_coupon",
-    "Create a discount coupon.",
+    "Create a discount coupon. The discount value is interpreted per the account's coupon settings.",
     {
       code: z.string().describe("Coupon code, case insensitive"),
-      discount: z.number().positive().describe("Discount amount or percentage value"),
-      discountType: z
-        .enum(["percent", "fixed"])
-        .describe("percent for a percentage, fixed for a flat amount"),
-      limit: z
+      discountValue: z.number().positive().describe("Discount value"),
+      expirationDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "expirationDate must be YYYY-MM-DD")
+        .optional()
+        .describe("Expiry date, YYYY-MM-DD"),
+      usageLimit: z
         .number()
         .int()
         .positive()
         .optional()
-        .describe("Max number of uses. Omit for unlimited."),
-      expirationDate: z.string().optional().describe("Expiry date, YYYY-MM-DD"),
+        .describe("Max total uses. Omit for unlimited."),
+      limitPerUser: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe("Max uses per customer. Omit for unlimited."),
+      bookingLimitAmount: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe("Max bookings the coupon applies to in one checkout."),
     },
     async (args) => {
       try {
-        return textResult(await client.post(`/coupons`, args));
+        // The numeric limit fields must be present. send explicit null when
+        // unset, otherwise the API returns 422.
+        const body = {
+          code: args.code,
+          discount_value: args.discountValue,
+          expiration_date: args.expirationDate ?? null,
+          usage_limit: args.usageLimit ?? null,
+          limit_per_user: args.limitPerUser ?? null,
+          booking_limit_amount: args.bookingLimitAmount ?? null,
+        };
+        return textResult(await client.post(`/coupons`, body));
       } catch (e) {
         return errorResult(e);
       }

@@ -6,13 +6,8 @@ import { buildQuery, errorResult, textResult } from "../util.js";
 export function registerAppointmentTools(server: McpServer, client: TrafftClient): void {
   server.tool(
     "list_appointments",
-    "List appointments with optional filters by date range, employee, service, customer, and status.",
+    "List appointments, newest first. Filter by status, and page through. The API does not filter by date, employee, service, or customer, so match those client side.",
     {
-      startDate: z.string().optional().describe("Filter from date, YYYY-MM-DD"),
-      endDate: z.string().optional().describe("Filter to date, YYYY-MM-DD"),
-      employeeId: z.number().int().positive().optional(),
-      serviceId: z.number().int().positive().optional(),
-      customerId: z.number().int().positive().optional(),
       status: z
         .enum(["approved", "pending", "canceled", "rejected", "no-show"])
         .optional()
@@ -25,19 +20,6 @@ export function registerAppointmentTools(server: McpServer, client: TrafftClient
         // Default to a small page to keep results token-lean.
         const q = buildQuery({ ...args, limit: args.limit ?? 20 });
         return textResult(await client.get(`/appointments${q}`));
-      } catch (e) {
-        return errorResult(e);
-      }
-    },
-  );
-
-  server.tool(
-    "get_appointment",
-    "Get a single appointment by id.",
-    { id: z.number().int().positive().describe("Appointment id") },
-    async ({ id }) => {
-      try {
-        return textResult(await client.get(`/appointments/${id}`));
       } catch (e) {
         return errorResult(e);
       }

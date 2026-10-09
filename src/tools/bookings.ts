@@ -4,59 +4,40 @@ import type { TrafftClient } from "../client.js";
 import { errorResult, textResult } from "../util.js";
 
 export function registerBookingTools(server: McpServer, client: TrafftClient): void {
+  // CODE_DELETE_OK: rewrite booking payload to the verified Trafft v2 contract (service/employee/date/time/customer-id); old serviceId/bookingStart + inline-customer shape does not exist in v2.
   server.tool(
     "create_booking",
-    "Create a new booking (appointment). Provide either an existing customerId or the customer fields to create one. Call get_available_times first to confirm the slot is open.",
+    "Book an appointment for an existing customer. The customer must already exist (use list_customers or create_customer first to get the id). Call get_available_times first to confirm the slot is open.",
     {
-      serviceId: z.number().int().positive().describe("Service id"),
-      employeeId: z.number().int().positive().describe("Employee id"),
-      bookingStart: z
+      service: z.number().int().positive().describe("Service id"),
+      employee: z.number().int().positive().describe("Employee id"),
+      customer: z.number().int().positive().describe("Existing customer id"),
+      date: z
         .string()
-        .describe("Start datetime in YYYY-MM-DD HH:mm:ss format (space separated)"),
-      locationId: z.number().int().positive().optional().describe("Optional location id"),
-      customerId: z
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD")
+        .describe("Date in YYYY-MM-DD format"),
+      time: z
+        .string()
+        .regex(/^\d{2}:\d{2}$/, "time must be 24-hour HH:mm, e.g. 14:30")
+        .describe("Start time in 24-hour HH:mm format, e.g. 14:30"),
+      location: z.number().int().positive().optional().describe("Optional location id"),
+      status: z
         .number()
         .int()
-        .positive()
         .optional()
-        .describe("Existing customer id. Omit to create a new customer from the fields below."),
-      customerFirstName: z.string().optional().describe("Required when customerId is omitted"),
-      customerLastName: z.string().optional().describe("Required when customerId is omitted"),
-      customerEmail: z.string().email().optional(),
-      customerPhone: z.string().optional(),
-      couponCode: z.string().optional().describe("Optional discount coupon code"),
-      notifyParticipants: z
-        .boolean()
-        .optional()
-        .describe("Send email and SMS notifications. Defaults to true on the Trafft side."),
+        .describe("Optional appointment status code. Omit to use the account default."),
     },
     async (args) => {
       try {
         const payload: Record<string, unknown> = {
-          serviceId: args.serviceId,
-          employeeId: args.employeeId,
-          bookingStart: args.bookingStart,
+          service: args.service,
+          employee: args.employee,
+          customer: args.customer,
+          date: args.date,
+          time: args.time,
         };
-        if (args.locationId !== undefined) payload.locationId = args.locationId;
-        if (args.couponCode !== undefined) payload.couponCode = args.couponCode;
-        if (args.notifyParticipants !== undefined) {
-          payload.notifyParticipants = args.notifyParticipants;
-        }
-        if (args.customerId !== undefined) {
-          payload.customerId = args.customerId;
-        } else {
-          if (!args.customerFirstName || !args.customerLastName) {
-            throw new Error(
-              "Provide either customerId, or customerFirstName and customerLastName for a new customer.",
-            );
-          }
-          payload.customer = {
-            firstName: args.customerFirstName,
-            lastName: args.customerLastName,
-            email: args.customerEmail,
-            phone: args.customerPhone,
-          };
-        }
+        if (args.location !== undefined) payload.location = args.location;
+        if (args.status !== undefined) payload.status = args.status;
         return textResult(await client.post(`/bookings`, payload));
       } catch (e) {
         return errorResult(e);

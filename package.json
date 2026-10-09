@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Model Context Protocol server for the Trafft booking platform. Talk to your Trafft calendar from any MCP client.",
   "type": "module",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "keywords": [
     "mcp",
     "model-context-protocol",

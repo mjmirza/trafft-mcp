@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/trafft-logo.svg" alt="Trafft" width="180" />
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/trafft-logo.png" alt="Trafft" width="210" />
 </p>
 
 <h1 align="center">trafft-mcp</h1>
@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://github.com/mjmirza/trafft-mcp/actions/workflows/ci.yml/badge.svg" alt="CI" />
-  <img src="https://img.shields.io/badge/license-MIT-2ea44f.svg" alt="License MIT" />
+  <img src="https://img.shields.io/badge/license-OpenRoots_ORA_2.3-2ea44f.svg" alt="License OpenRoots ORA 2.3" />
   <img src="https://img.shields.io/badge/node-%3E%3D18-2ea44f.svg" alt="Node 18 or newer" />
   <img src="https://img.shields.io/badge/MCP-server-2ea44f.svg" alt="MCP server" />
   <img src="https://img.shields.io/badge/PRs-welcome-2ea44f.svg" alt="PRs welcome" />
@@ -41,9 +41,22 @@ Once it is connected, you talk to your assistant normally and it acts on your re
 - "Book a strategy session for Sarah on Monday at 2pm."
 - "Which slots are free for a consultation this Friday?"
 - "Add a new customer, Max, max@example.com."
-- "Show me every coupon and how many times it was used."
+- "Create a 10 percent coupon called LAUNCH."
 
 No code. No dashboards. No clicking through screens.
+
+## See it working
+
+Every endpoint is verified live against a real Trafft instance. The bundled auditor logs in and probes each one, so you know the connection is healthy before you rely on it. Sensitive values are masked in these images.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/audit.png" alt="trafft-mcp live audit, seven endpoints passing" width="520" />
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/tools.png" alt="The 17 trafft-mcp tools" width="520" />
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/call.png" alt="A live list_services tool call" width="520" />
+</p>
 
 ## Where to find your credentials
 
@@ -85,9 +98,6 @@ Add your credentials.
 ```bash
 cp .env.example .env
 # open .env and paste your three values
-
-[![OpenRoots ORA 2.3](https://openroots.org/badge/ora.svg)](https://openroots.org/licenses/ora/2.3)
-
 ```
 
 Your `.env` is private. It is gitignored, never committed, and never leaves your machine.
@@ -148,15 +158,15 @@ flowchart LR
   D --> C --> B --> A
 ```
 
-Authentication is a token exchange. The server trades your client credentials for a Bearer token, sends it on every call, and refreshes it automatically if it expires.
+Authentication is an OAuth2 client-credentials exchange. The server trades your client credentials for a Bearer token, sends it on every call, and refreshes it automatically if it expires.
 
 ```mermaid
 sequenceDiagram
   participant S as trafft-mcp
   participant T as Trafft API
-  S->>T: POST /auth/token { clientId, clientSecret }
-  T-->>S: { token }
-  S->>T: GET /services (Authorization Bearer token)
+  S->>T: POST /token (grant_type=client_credentials, client_id, client_secret)
+  T-->>S: { access_token }
+  S->>T: GET /services (Authorization Bearer access_token)
   T-->>S: services
   Note over S,T: On 401 the server re-authenticates once and retries.
 ```
@@ -167,18 +177,18 @@ sequenceDiagram
 | Runtime | Node 18 or newer |
 | Transport | stdio (JSON-RPC) |
 | SDK | @modelcontextprotocol/sdk |
-| Auth | Bearer token from client credentials, refreshed on 401 |
-| Tools | 20 across 8 domains |
+| Auth | OAuth2 client-credentials Bearer token, refreshed on 401 |
+| Tools | 17 across 8 domains |
 | Works with | Trafft cloud, self-hosted, white-label, and reseller client accounts |
 
 </details>
 
 <details>
-<summary><b>All 20 tools</b></summary>
+<summary><b>All 17 tools</b></summary>
 
 | Tool | What it does |
 |---|---|
-| `list_customers` | List customers, with optional search and paging |
+| `list_customers` | List customers, with paging |
 | `get_customer` | Fetch one customer by id |
 | `create_customer` | Add a new customer |
 | `update_customer` | Change fields on a customer |
@@ -189,12 +199,10 @@ sequenceDiagram
 | `get_location` | Fetch one location |
 | `list_services` | List bookable services, durations, and prices |
 | `get_service` | Fetch one service |
-| `get_available_times` | Open slots for a service on a date |
-| `list_appointments` | List appointments, filtered by date, staff, service, customer, status |
-| `get_appointment` | Fetch one appointment |
+| `get_available_times` | Upcoming open slots for a service, grouped by date |
+| `list_appointments` | List appointments, filtered by status, with paging |
 | `cancel_appointment` | Cancel an appointment (destructive) |
-| `create_booking` | Create an appointment for a new or existing customer |
-| `list_coupons` | List coupons and usage (needs Coupons) |
+| `create_booking` | Book an appointment for an existing customer |
 | `create_coupon` | Create a discount coupon |
 | `delete_coupon` | Remove a coupon (destructive) |
 
@@ -224,7 +232,7 @@ It also maps which endpoints your account exposes, so you can see exactly what i
 
 ## White-label, self-hosted, and reseller accounts
 
-This works whether your Trafft is on the cloud, on your own domain, or on a white-label or reseller client account, because you give it the full base URL rather than a fixed subdomain. Point `TRAFFT_API_URL` at whatever your API card shows. If your instance uses a different API version path, set `TRAFFT_API_PATH` (default `/api/v1`).
+This works whether your Trafft is on the cloud, on your own domain, or on a white-label or reseller client account, because you give it the full base URL rather than a fixed subdomain. Point `TRAFFT_API_URL` at whatever your API card shows. If your instance uses a different API version path, set `TRAFFT_API_PATH` (default `/api/v2`).
 
 <details>
 <summary><b>What the API does not cover</b></summary>
@@ -266,6 +274,6 @@ Thank you for using it and for sharing it.
 
 ## License and trademarks
 
-Released under the [MIT License](LICENSE). Free to use, copy, modify, and distribute.
+Source-available under the [OpenRoots Agent License 2.3](LICENSE). Free at or below USD 20 million annual revenue, and for any individual or nonprofit. See [docs/LICENSING.md](docs/LICENSING.md).
 
 Trafft and the Trafft logo are trademarks of their owner. This project is independent and not affiliated with, endorsed by, or sponsored by Trafft. The logo appears here under nominative fair use to identify the platform this tool connects to. Full evaluation in [docs/LICENSING.md](docs/LICENSING.md).

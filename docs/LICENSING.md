@@ -4,7 +4,7 @@ This document explains the legal footing of this project in plain terms. It is n
 
 ## This project's license
 
-`trafft-mcp` is released under the MIT License (see [LICENSE](../LICENSE)). You may use, copy, modify, merge, publish, distribute, sublicense, and sell copies, free of charge. The only condition is that the copyright notice and permission notice travel with the software. The software is provided without warranty.
+`trafft-mcp` is source-available under the OpenRoots Agent License 2.3 (see [LICENSE](../LICENSE)). It is free at or below USD 20 million annual revenue, and free for any individual or nonprofit. Above that threshold a small revenue share applies, capped per the license text. AI training on the code is a separate Compute tier and requires its own licence. The software is provided without warranty.
 
 ## Relationship to Trafft
 
@@ -30,7 +30,7 @@ If the trademark owner asks for a change to how the name or logo appears, the ri
 
 ## The Trafft logo file
 
-The logo at [assets/trafft-logo.svg](../assets/trafft-logo.svg) is the property of the trademark owner and is included for identification only. It is not covered by this project's MIT License. If you fork or redistribute this project, treat the logo as the owner's trademark, not as part of the MIT-licensed code.
+The logo at [assets/trafft-logo.svg](../assets/trafft-logo.svg) is the property of the trademark owner and is included for identification only. It is not covered by this project's license. If you fork or redistribute this project, treat the logo as the owner's trademark, not as part of the licensed code.
 
 ## Using the API responsibly
 
@@ -48,7 +48,7 @@ The Trafft API is in beta and may change. This project is provided as is, with n
 
 | Item | Status |
 |---|---|
-| This project's code | MIT, yours to use freely |
+| This project's code | Source-available under OpenRoots ORA 2.3, free at or below USD 20M revenue |
 | Trafft name and logo | Trademark of the owner, used for identification only |
 | Affiliation with Trafft | None |
 | Your API credentials | Yours, kept local, never shipped |

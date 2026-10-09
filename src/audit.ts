@@ -78,12 +78,6 @@ async function probe(path: string): Promise<string> {
   }
 }
 
-function plusDaysISO(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 function firstId(payload: unknown): number | undefined {
   // Trafft list responses vary. Handle array, { data: [] }, { items: [] }.
   const arr = Array.isArray(payload)
@@ -101,20 +95,18 @@ async function main(): Promise<void> {
   console.error(`trafft-mcp endpoint audit. mode ${DEEP ? "deep" : "read only"}. ${new Date().toISOString()}`);
   console.error(`target ${apiUrl}`);
 
-  await check("auth /auth/token", () => client.authenticate());
+  await check("auth /token", () => client.authenticate());
 
   await check("GET /customers", () => client.get("/customers?limit=1"));
   await check("GET /employees", () => client.get("/employees"));
   await check("GET /locations", () => client.get("/locations"), true);
   const services = await check("GET /services", () => client.get("/services"));
   await check("GET /appointments", () => client.get("/appointments?limit=1"));
-  await check("GET /coupons", () => client.get("/coupons"), true);
 
   const serviceId = firstId(services);
   if (serviceId !== undefined) {
-    const date = plusDaysISO(7);
     await check(`GET /available-times (service ${serviceId})`, () =>
-      client.get(`/available-times?serviceId=${serviceId}&date=${date}`),
+      client.get(`/available-times?service=${serviceId}`),
     );
   } else {
     results.push({
@@ -128,17 +120,24 @@ async function main(): Promise<void> {
     const stamp = Date.now();
     const created = (await check("POST /customers (deep)", () =>
       client.post("/customers", {
-        firstName: "MCP",
-        lastName: `Audit ${stamp}`,
+        first_name: "MCP",
+        last_name: `Audit ${stamp}`,
         email: `mcp.audit.${stamp}@example.com`,
-        note: "Automated audit record. Safe to delete.",
+        description: "Automated audit record. Safe to delete.",
       }),
     )) as { id?: number } | undefined;
 
     if (created?.id) {
       await check("GET /customers/{id} (deep)", () => client.get(`/customers/${created.id}`));
-      await check("PUT /customers/{id} (deep)", () =>
-        client.put(`/customers/${created.id}`, { note: "Audit update ok" }),
+      // PATCH requires the full object (first_name, last_name, email, phone).
+      await check("PATCH /customers/{id} (deep)", () =>
+        client.patch(`/customers/${created.id}`, {
+          first_name: "MCP",
+          last_name: `Audit ${stamp}`,
+          email: `mcp.audit.${stamp}@example.com`,
+          phone: "",
+          description: "Audit update ok",
+        }),
       );
       await check("DELETE /customers/{id} (deep cleanup)", () =>
         client.delete(`/customers/${created.id}`),
@@ -148,11 +147,13 @@ async function main(): Promise<void> {
     const coupon = (await check(
       "POST /coupons (deep)",
       () =>
+        // The numeric limit fields must be present (null is accepted).
         client.post("/coupons", {
           code: `MCPAUDIT${stamp}`,
-          discount: 1,
-          discountType: "fixed",
-          limit: 1,
+          discount_value: 1,
+          usage_limit: 1,
+          limit_per_user: null,
+          booking_limit_amount: null,
         }),
       true,
     )) as { id?: number } | undefined;
