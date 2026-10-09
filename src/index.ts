@@ -42,8 +42,9 @@ async function main(): Promise<void> {
     apiPath,
   });
 
-  // Fail fast with a clear message if credentials are wrong.
-  await client.authenticate();
+  // Warm up auth with a short backoff. A transient outage or throttle must not
+  // stop the server from starting. each tool call re-authenticates on demand.
+  await warmUpAuth(client);
 
   const server = new McpServer({
     name: "trafft",
@@ -64,6 +65,25 @@ async function main(): Promise<void> {
 
   // Stderr is safe. Stdout is reserved for the JSON-RPC protocol.
   console.error("trafft-mcp is running on stdio.");
+}
+
+// Try to authenticate up to three times with a short backoff, then give up
+// quietly. a failed warm-up still lets the server start and retry per call.
+async function warmUpAuth(client: TrafftClient): Promise<void> {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await client.authenticate(); // BESTPRACTICE_OK: retry loop, each attempt depends on the previous failing
+      console.error("trafft-mcp authenticated with Trafft.");
+      return;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`trafft-mcp auth attempt ${attempt} failed. ${msg}`);
+      if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 1000)); // BESTPRACTICE_OK: sequential backoff between retries
+    }
+  }
+  console.error(
+    "trafft-mcp could not authenticate at startup. serving anyway, each tool call will retry.",
+  );
 }
 
 main().catch((err) => {

@@ -32,5 +32,8 @@ jobs:
       - name: Typecheck and build
         run: npm run build
 
+      - name: Offline contract tests
+        run: node --test
+
       - name: Dead code gate (Fallow)
         run: npx -y fallow@2.88.2 dead-code

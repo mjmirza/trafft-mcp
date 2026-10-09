@@ -47,7 +47,7 @@ No code. No dashboards. No clicking through screens.
 
 ## See it working
 
-Every endpoint is verified live against a real Trafft instance. The bundled auditor logs in and probes each one, so you know the connection is healthy before you rely on it. Sensitive values are masked in these images.
+The tools are verified live against a real Trafft instance. The bundled auditor logs in and probes the core read endpoints, and the deep mode round-trips the write paths, so you know the connection is healthy before you rely on it. Sensitive values are masked in these images.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/audit.png" alt="trafft-mcp live audit, seven endpoints passing" width="520" />
@@ -221,14 +221,15 @@ Every result an AI assistant reads costs tokens. This server stays small by defa
 
 ## Check that it works
 
-A built-in auditor confirms that login works and that every endpoint actually responds.
+Run `doctor` first. It checks your three settings, confirms the URL is https, authenticates live, and probes a read endpoint, with a clear fix for anything that fails.
 
 ```bash
-npm run audit        # read only. logs in and probes every endpoint
-npm run audit:deep   # also creates a throwaway test record and cleans it up
+npm run doctor       # guided preflight. settings, https, live auth, one read probe
+npm run audit        # read only. logs in and probes the core read endpoints
+npm run audit:deep   # also round-trips the write paths with a throwaway record it cleans up
 ```
 
-It also maps which endpoints your account exposes, so you can see exactly what is available on your plan. A scheduled copy runs monthly in CI and opens an issue if anything breaks. Add your three keys as repository secrets to turn it on.
+The auditor also maps which endpoints your account exposes, so you can see exactly what is available on your plan. A scheduled copy runs monthly in CI and opens an issue if anything breaks. Add your three keys as repository secrets to turn it on.
 
 ## White-label, self-hosted, and reseller accounts
 
