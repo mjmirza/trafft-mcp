@@ -32,13 +32,15 @@ export function registerCouponTools(server: McpServer, client: TrafftClient): vo
     },
     async (args) => {
       try {
+        // The numeric limit fields must be present. send explicit null when
+        // unset, otherwise the API returns 422.
         const body = {
           code: args.code,
           discount_value: args.discountValue,
-          expiration_date: args.expirationDate,
-          usage_limit: args.usageLimit,
-          limit_per_user: args.limitPerUser,
-          booking_limit_amount: args.bookingLimitAmount,
+          expiration_date: args.expirationDate ?? null,
+          usage_limit: args.usageLimit ?? null,
+          limit_per_user: args.limitPerUser ?? null,
+          booking_limit_amount: args.bookingLimitAmount ?? null,
         };
         return textResult(await client.post(`/coupons`, body));
       } catch (e) {
