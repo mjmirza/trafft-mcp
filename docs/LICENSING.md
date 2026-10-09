@@ -4,7 +4,7 @@ This document explains the legal footing of this project in plain terms. It is n
 
 ## This project's license
 
-`trafft-mcp` is source-available under the OpenRoots License 1.1 (see [LICENSE](../LICENSE)). It is free to use below USD 2 million annual revenue. above that, a small revenue share applies, capped per the license text. The license converts automatically and irrevocably to Apache 2.0 on its sunset date, and AI training on the code requires a separate Compute licence. The software is provided without warranty.
+`trafft-mcp` is source-available under the OpenRoots Agent License 2.3 (see [LICENSE](../LICENSE)). It is free at or below USD 20 million annual revenue, and free for any individual or nonprofit. Above that threshold a small revenue share applies, capped per the license text. AI training on the code is a separate Compute tier and requires its own licence. The software is provided without warranty.
 
 ## Relationship to Trafft
 
@@ -48,7 +48,7 @@ The Trafft API is in beta and may change. This project is provided as is, with n
 
 | Item | Status |
 |---|---|
-| This project's code | Source-available under OpenRoots ORL 1.1, free below USD 2M revenue |
+| This project's code | Source-available under OpenRoots ORA 2.3, free at or below USD 20M revenue |
 | Trafft name and logo | Trademark of the owner, used for identification only |
 | Affiliation with Trafft | None |
 | Your API credentials | Yours, kept local, never shipped |
