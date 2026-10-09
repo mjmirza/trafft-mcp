@@ -6,9 +6,8 @@ import { buildQuery, errorResult, textResult } from "../util.js";
 export function registerCustomerTools(server: McpServer, client: TrafftClient): void {
   server.tool(
     "list_customers",
-    "List customers in the Trafft account. Supports an optional search term and pagination.",
+    "List customers in the Trafft account, newest first, with pagination. The API has no server-side search, so page through and match client side.",
     {
-      search: z.string().optional().describe("Search by name or email"),
       page: z.number().int().positive().optional().describe("Page number"),
       limit: z.number().int().positive().optional().describe("Results per page"),
     },
@@ -43,13 +42,19 @@ export function registerCustomerTools(server: McpServer, client: TrafftClient): 
       firstName: z.string().describe("First name"),
       lastName: z.string().describe("Last name"),
       email: z.string().email().optional().describe("Email address"),
-      phone: z.string().optional().describe("Phone number"),
-      birthday: z.string().optional().describe("Birthday in YYYY-MM-DD format"),
-      note: z.string().optional().describe("Internal note about the customer"),
+      phone: z.string().optional().describe("Phone number in international format, e.g. +491701234567"),
+      description: z.string().optional().describe("Internal note about the customer"),
     },
     async (args) => {
       try {
-        return textResult(await client.post(`/customers`, args));
+        const body = {
+          first_name: args.firstName,
+          last_name: args.lastName,
+          email: args.email,
+          phone: args.phone,
+          description: args.description,
+        };
+        return textResult(await client.post(`/customers`, body));
       } catch (e) {
         return errorResult(e);
       }
@@ -64,13 +69,18 @@ export function registerCustomerTools(server: McpServer, client: TrafftClient): 
       firstName: z.string().optional(),
       lastName: z.string().optional(),
       email: z.string().email().optional(),
-      phone: z.string().optional(),
-      birthday: z.string().optional().describe("YYYY-MM-DD"),
-      note: z.string().optional(),
+      phone: z.string().optional().describe("Phone number in international format"),
+      description: z.string().optional().describe("Internal note about the customer"),
     },
-    async ({ id, ...fields }) => {
+    async ({ id, firstName, lastName, email, phone, description }) => {
       try {
-        return textResult(await client.put(`/customers/${id}`, fields));
+        const body: Record<string, unknown> = {};
+        if (firstName !== undefined) body.first_name = firstName;
+        if (lastName !== undefined) body.last_name = lastName;
+        if (email !== undefined) body.email = email;
+        if (phone !== undefined) body.phone = phone;
+        if (description !== undefined) body.description = description;
+        return textResult(await client.patch(`/customers/${id}`, body));
       } catch (e) {
         return errorResult(e);
       }

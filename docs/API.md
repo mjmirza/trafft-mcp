@@ -1,6 +1,6 @@
 # Trafft API Reference
 
-This is the endpoint reference that `trafft-mcp` is built on. The Trafft API is in beta, so always confirm against your own instance with `npm run audit`.
+This is the endpoint reference that `trafft-mcp` is built on. The contract below was verified live against a Trafft v2 instance (`flows.admin.next8n.com`) on 2026-10-09. Always confirm against your own instance with `npm run audit`.
 
 ## Base URL
 
@@ -10,34 +10,38 @@ All calls go to your instance base URL plus the version path.
 {TRAFFT_API_URL}{TRAFFT_API_PATH}
 ```
 
-`TRAFFT_API_URL` is the full base URL of your Trafft (no trailing slash). `TRAFFT_API_PATH` defaults to `/api/v1`. So a cloud account resolves to `https://yoursubdomain.trafft.com/api/v1`.
+`TRAFFT_API_URL` is the full base URL of your Trafft (no trailing slash). `TRAFFT_API_PATH` defaults to `/api/v2`. So a cloud account resolves to `https://yoursubdomain.trafft.com/api/v2`.
 
 ## Authentication
 
-Trafft uses a Bearer token. The server exchanges your client credentials for a token, then sends that token on every request.
+Trafft uses the OAuth2 client-credentials grant. The server exchanges your client credentials for a Bearer token, then sends that token on every request. The token body is form-encoded, not JSON.
 
 ```
-POST {base}/auth/token
-Content-Type application/json
+POST {base}/token
+Content-Type application/x-www-form-urlencoded
 
-{ "clientId": "...", "clientSecret": "..." }
+grant_type=client_credentials&client_id=...&client_secret=...
 ```
 
-A success response carries a token.
+A success response carries the token under `access_token`.
 
 ```
-{ "token": "..." }
+{ "token_type": "Bearer", "expires_in": 3600, "access_token": "..." }
 ```
 
 Every other request then carries the token.
 
 ```
-Authorization Bearer {token}
+Authorization Bearer {access_token}
 ```
 
-The server refreshes the token automatically when a request returns 401.
+The server refreshes the token automatically when a request returns 401 (tokens expire after 3600 seconds).
 
-> A note on field names. The credentials in the Trafft API card are a Client ID and a Client Secret. The token request body uses `clientId` and `clientSecret`. White-label and self-hosted instances can differ. If your instance documents a different token body or path, adjust `authenticate` in `src/client.ts` and set `TRAFFT_API_PATH` as needed. Run `npm run audit` to confirm the handshake works before relying on it.
+> A note on field names. The credentials in the Trafft API card are a Client ID and a Client Secret. The token body uses the OAuth2 names `client_id` and `client_secret`. If your instance uses a different version path, set `TRAFFT_API_PATH`. Run `npm run audit` to confirm the handshake works before relying on it.
+
+## Response shape
+
+List endpoints return `{ "data": [ ... ], "pagination": { "total", "page", "limit", "pages" } }`. Single-record GETs return the object directly. Fields are snake_case (for example `first_name`, `phone_number`, `start_date_time`).
 
 ## Endpoints
 
@@ -47,9 +51,11 @@ The server refreshes the token automatically when a request returns 401.
 |---|---|---|
 | GET | /customers | List customers (search, page, limit) |
 | GET | /customers/{id} | Get one customer |
-| POST | /customers | Create a customer |
-| PUT | /customers/{id} | Update a customer |
+| POST | /customers | Create a customer (`first_name`, `last_name`, `email`, `phone`, `description`) |
+| PATCH | /customers/{id} | Update a customer (same snake_case fields) |
 | DELETE | /customers/{id} | Delete a customer |
+
+Customer list has no server-side search. page through with `page` and `limit`.
 
 ### Employees
 
@@ -76,15 +82,16 @@ The server refreshes the token automatically when a request returns 401.
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | /available-times | Open slots for a serviceId on a date (optional employeeId, locationId) |
+| GET | /available-times | Upcoming open slots for a `service` (optional `employee`, `location`). Returns a rolling window of upcoming dates; it does not accept a date filter. |
 
 ### Appointments
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | /appointments | List appointments (date range, employeeId, serviceId, customerId, status, page, limit) |
-| GET | /appointments/{id} | Get one appointment |
+| GET | /appointments | List appointments (`status`, `page`, `limit` only. no date/employee/service/customer filters) |
 | DELETE | /appointments/{id} | Cancel an appointment |
+
+There is no single-appointment GET (`GET /appointments/{id}` returns 405). Read one from the list.
 
 ### Bookings
 
@@ -92,15 +99,16 @@ The server refreshes the token automatically when a request returns 401.
 |---|---|---|
 | POST | /bookings | Create an appointment for a new or existing customer |
 
-The booking body takes `serviceId`, `employeeId`, and `bookingStart` in `YYYY-MM-DD HH:mm:ss` form. Pass `customerId` for an existing customer, or a `customer` object to create one. Optional fields are `locationId`, `couponCode`, and `notifyParticipants`.
+The booking body takes `service` (id), `employee` (id), `customer` (existing customer id), `date` (`YYYY-MM-DD`), and `time` (`HH:mm`). Optional fields are `location` (id) and `status` (int). The customer must already exist. there is no inline-customer create on this endpoint, so call `POST /customers` first.
 
 ### Coupons
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | /coupons | List coupons (needs Coupons feature) |
-| POST | /coupons | Create a coupon |
+| POST | /coupons | Create a coupon (`code`, `discount_value`, `expiration_date`, `usage_limit`, `limit_per_user`, `booking_limit_amount`) |
 | DELETE | /coupons/{id} | Delete a coupon |
+
+There is no coupon list endpoint (`GET /coupons` returns 405).
 
 ## Status values
 

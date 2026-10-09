@@ -6,17 +6,16 @@ import { buildQuery, errorResult, textResult } from "../util.js";
 export function registerAvailabilityTools(server: McpServer, client: TrafftClient): void {
   server.tool(
     "get_available_times",
-    "Get open booking slots for a service on a date. Respects working hours, buffers, and existing appointments. Call this before create_booking to confirm a slot is free.",
+    "Get upcoming open booking slots for a service, grouped by date. Respects working hours, buffers, and existing appointments. Returns a rolling window of upcoming days (the API does not take a date filter, so pick the date you need from the result). Call this before create_booking to confirm a slot is free.",
     {
-      serviceId: z.number().int().positive().describe("Service id"),
-      date: z.string().describe("Date to check, YYYY-MM-DD"),
-      employeeId: z
+      service: z.number().int().positive().describe("Service id"),
+      employee: z
         .number()
         .int()
         .positive()
         .optional()
         .describe("Optional. Limit to one employee. Omit to check all."),
-      locationId: z.number().int().positive().optional().describe("Optional location id"),
+      location: z.number().int().positive().optional().describe("Optional location id"),
     },
     async (args) => {
       try {

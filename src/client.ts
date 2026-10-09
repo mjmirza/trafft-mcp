@@ -6,10 +6,10 @@
  * automatically when the API returns 401.
  *
  * Note on credentials. Trafft's API setup page provides a Client ID and a
- * Client Secret. The token request body uses the field names `clientId` and
- * `clientSecret`. The Trafft API is in beta, so if your instance documents a
- * different token body, adjust the `authenticate` method below. See
- * docs/API.md for the full reference.
+ * Client Secret. The token endpoint follows the OAuth2 client-credentials
+ * grant. a form-encoded POST to /token with `grant_type=client_credentials`,
+ * `client_id`, and `client_secret`. The response carries `access_token`. This
+ * contract was verified live against a Trafft v2 instance. See docs/API.md.
  */
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -29,22 +29,27 @@ export class TrafftClient {
     timeoutMs?: number;
   }) {
     const root = opts.apiUrl.replace(/\/+$/, "");
-    const path = (opts.apiPath ?? "/api/v1").replace(/\/+$/, "").replace(/^\/?/, "/");
+    const path = (opts.apiPath ?? "/api/v2").replace(/\/+$/, "").replace(/^\/?/, "/");
     this.baseUrl = `${root}${path}`;
     this.clientId = opts.clientId;
     this.clientSecret = opts.clientSecret;
     this.timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
-  /** Exchange client credentials for a Bearer token. */
+  /**
+   * Exchange client credentials for a Bearer token via the OAuth2
+   * client-credentials grant. The body is form-encoded, not JSON.
+   */
   async authenticate(): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/auth/token`, { // BESTPRACTICE_OK: AbortSignal.timeout passed in options below
+    const form = new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+    });
+    const res = await fetch(`${this.baseUrl}/token`, { // BESTPRACTICE_OK: AbortSignal.timeout passed in options below
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        clientId: this.clientId,
-        clientSecret: this.clientSecret,
-      }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
       signal: AbortSignal.timeout(this.timeoutMs),
     });
     if (!res.ok) {
@@ -53,10 +58,13 @@ export class TrafftClient {
         `Trafft authentication failed (${res.status}). ${truncate(body)}`,
       );
     }
-    const data = (await res.json()) as { token?: string; access_token?: string };
-    const token = data.token ?? data.access_token;
+    const data = (await res.json()) as {
+      access_token?: string;
+      token?: string;
+    };
+    const token = data.access_token ?? data.token;
     if (!token) {
-      throw new Error("Trafft authentication returned no token field.");
+      throw new Error("Trafft authentication returned no access_token field.");
     }
     this.token = token;
   }
@@ -111,6 +119,10 @@ export class TrafftClient {
 
   put<T = unknown>(path: string, body: unknown): Promise<T> {
     return this.request<T>("PUT", path, body);
+  }
+
+  patch<T = unknown>(path: string, body: unknown): Promise<T> {
+    return this.request<T>("PATCH", path, body);
   }
 
   delete<T = unknown>(path: string): Promise<T> {
