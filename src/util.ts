@@ -27,7 +27,8 @@ function stripEmpty(value: unknown): unknown {
     for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
       if (raw === null || raw === undefined || raw === "") continue;
       const cleaned = stripEmpty(raw);
-      if (Array.isArray(cleaned) && cleaned.length === 0) continue;
+      // Keep empty arrays. an empty data array means "no records", which the
+      // model must be able to tell apart from a missing field.
       if (
         cleaned &&
         typeof cleaned === "object" &&

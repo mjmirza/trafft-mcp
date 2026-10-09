@@ -43,8 +43,10 @@ const client = new TrafftClient({ apiUrl, clientId, clientSecret, apiPath });
 const results: CheckResult[] = [];
 
 function isFeatureDisabled(msg: string): boolean {
+  // A bare 403 is NOT treated as a feature skip. it can be a revoked
+  // permission or a WAF denial that must surface as a real failure.
   const m = msg.toLowerCase();
-  return m.includes("403") || m.includes("feature") || m.includes("disabled") || m.includes("not enabled");
+  return m.includes("feature") || m.includes("disabled") || m.includes("not enabled");
 }
 
 async function check(name: string, fn: () => Promise<unknown>, optional = false): Promise<unknown> {
@@ -127,21 +129,27 @@ async function main(): Promise<void> {
       }),
     )) as { id?: number } | undefined;
 
-    if (created?.id) {
-      await check("GET /customers/{id} (deep)", () => client.get(`/customers/${created.id}`));
-      // PATCH requires the full object (first_name, last_name, email, phone).
-      await check("PATCH /customers/{id} (deep)", () =>
-        client.patch(`/customers/${created.id}`, {
-          first_name: "MCP",
-          last_name: `Audit ${stamp}`,
-          email: `mcp.audit.${stamp}@example.com`,
-          phone: "",
-          description: "Audit update ok",
-        }),
-      );
-      await check("DELETE /customers/{id} (deep cleanup)", () =>
-        client.delete(`/customers/${created.id}`),
-      );
+    const cid = created?.id;
+    if (cid) {
+      // try/finally guarantees the test record is deleted even if a check
+      // between create and cleanup throws unexpectedly.
+      try {
+        await check("GET /customers/{id} (deep)", () => client.get(`/customers/${cid}`));
+        // PATCH requires the full object (first_name, last_name, email, phone).
+        await check("PATCH /customers/{id} (deep)", () =>
+          client.patch(`/customers/${cid}`, {
+            first_name: "MCP",
+            last_name: `Audit ${stamp}`,
+            email: `mcp.audit.${stamp}@example.com`,
+            phone: "",
+            description: "Audit update ok",
+          }),
+        );
+      } finally {
+        await check("DELETE /customers/{id} (deep cleanup)", () =>
+          client.delete(`/customers/${cid}`),
+        );
+      }
     }
 
     const coupon = (await check(

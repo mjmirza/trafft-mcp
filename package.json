@@ -35,6 +35,8 @@
     "build": "tsc && node -e \"import('node:fs').then(fs => fs.chmodSync('build/index.js', 0o755))\"",
     "watch": "tsc --watch",
     "start": "node build/index.js",
+    "test": "npm run build && node --test",
+    "doctor": "node build/doctor.js",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "audit": "node build/audit.js",
     "audit:deep": "node build/audit.js --deep",

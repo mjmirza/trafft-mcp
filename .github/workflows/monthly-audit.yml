@@ -3,7 +3,7 @@ name: Monthly Endpoint Audit
 # Runs the endpoint auditor on a schedule so an expired credential, a changed
 # endpoint, or a toggled feature is caught early rather than in production.
 # Requires repo secrets TRAFFT_API_URL, TRAFFT_CLIENT_ID, TRAFFT_CLIENT_SECRET.
-# If those secrets are not set, the run fails fast with a clear message.
+# Absent secrets skip the run cleanly via a tested script, keeping it green.
 
 on:
   schedule:
@@ -39,7 +39,7 @@ jobs:
           TRAFFT_API_URL: ${{ secrets.TRAFFT_API_URL }}
           TRAFFT_CLIENT_ID: ${{ secrets.TRAFFT_CLIENT_ID }}
           TRAFFT_CLIENT_SECRET: ${{ secrets.TRAFFT_CLIENT_SECRET }}
-        run: npm run audit
+        run: bash tools/run-audit-if-configured.sh
 
       # actions/github-script v9.0.0, pinned to commit SHA
       - name: Open an issue if the audit failed
