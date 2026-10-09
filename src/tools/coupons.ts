@@ -10,7 +10,11 @@ export function registerCouponTools(server: McpServer, client: TrafftClient): vo
     {
       code: z.string().describe("Coupon code, case insensitive"),
       discountValue: z.number().positive().describe("Discount value"),
-      expirationDate: z.string().optional().describe("Expiry date, YYYY-MM-DD"),
+      expirationDate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "expirationDate must be YYYY-MM-DD")
+        .optional()
+        .describe("Expiry date, YYYY-MM-DD"),
       usageLimit: z
         .number()
         .int()

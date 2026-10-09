@@ -74,22 +74,23 @@ export function registerCustomerTools(server: McpServer, client: TrafftClient): 
     },
     async ({ id, firstName, lastName, email, phone, description }) => {
       try {
-        // The API rejects a partial PATCH (it 500s unless the full record is
-        // sent), so read the current customer and merge the changes over it.
+        // PATCH 500s on a partial body. it requires first_name, last_name,
+        // email, and phone, so read the record and merge the changes over it.
         const current = (await client.get(`/customers/${id}`)) as {
           first_name?: string;
           last_name?: string;
           email?: string;
           phone_number?: string;
-          description?: string;
         };
-        const body = {
+        const body: Record<string, unknown> = {
           first_name: firstName ?? current.first_name ?? "",
           last_name: lastName ?? current.last_name ?? "",
           email: email ?? current.email ?? "",
           phone: phone ?? current.phone_number ?? "",
-          description: description ?? current.description ?? "",
         };
+        // description is optional on PATCH and is not returned by GET, so only
+        // send it when the caller is changing it, otherwise it stays as is.
+        if (description !== undefined) body.description = description;
         return textResult(await client.patch(`/customers/${id}`, body));
       } catch (e) {
         return errorResult(e);

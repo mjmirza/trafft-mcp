@@ -12,8 +12,14 @@ export function registerBookingTools(server: McpServer, client: TrafftClient): v
       service: z.number().int().positive().describe("Service id"),
       employee: z.number().int().positive().describe("Employee id"),
       customer: z.number().int().positive().describe("Existing customer id"),
-      date: z.string().describe("Date in YYYY-MM-DD format"),
-      time: z.string().describe("Start time in 24-hour HH:mm format, e.g. 14:30"),
+      date: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD")
+        .describe("Date in YYYY-MM-DD format"),
+      time: z
+        .string()
+        .regex(/^\d{2}:\d{2}$/, "time must be 24-hour HH:mm, e.g. 14:30")
+        .describe("Start time in 24-hour HH:mm format, e.g. 14:30"),
       location: z.number().int().positive().optional().describe("Optional location id"),
       status: z
         .number()

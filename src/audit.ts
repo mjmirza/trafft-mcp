@@ -129,8 +129,15 @@ async function main(): Promise<void> {
 
     if (created?.id) {
       await check("GET /customers/{id} (deep)", () => client.get(`/customers/${created.id}`));
+      // PATCH requires the full object (first_name, last_name, email, phone).
       await check("PATCH /customers/{id} (deep)", () =>
-        client.patch(`/customers/${created.id}`, { description: "Audit update ok" }),
+        client.patch(`/customers/${created.id}`, {
+          first_name: "MCP",
+          last_name: `Audit ${stamp}`,
+          email: `mcp.audit.${stamp}@example.com`,
+          phone: "",
+          description: "Audit update ok",
+        }),
       );
       await check("DELETE /customers/{id} (deep cleanup)", () =>
         client.delete(`/customers/${created.id}`),
@@ -140,10 +147,13 @@ async function main(): Promise<void> {
     const coupon = (await check(
       "POST /coupons (deep)",
       () =>
+        // The numeric limit fields must be present (null is accepted).
         client.post("/coupons", {
           code: `MCPAUDIT${stamp}`,
           discount_value: 1,
           usage_limit: 1,
+          limit_per_user: null,
+          booking_limit_amount: null,
         }),
       true,
     )) as { id?: number } | undefined;

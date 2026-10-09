@@ -49,7 +49,7 @@ List endpoints return `{ "data": [ ... ], "pagination": { "total", "page", "limi
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | /customers | List customers (search, page, limit) |
+| GET | /customers | List customers (page, limit. no search) |
 | GET | /customers/{id} | Get one customer |
 | POST | /customers | Create a customer (`first_name`, `last_name`, `email`, `phone`, `description`) |
 | PATCH | /customers/{id} | Update a customer (same snake_case fields) |
@@ -97,7 +97,7 @@ There is no single-appointment GET (`GET /appointments/{id}` returns 405). Read 
 
 | Method | Path | Purpose |
 |---|---|---|
-| POST | /bookings | Create an appointment for a new or existing customer |
+| POST | /bookings | Create an appointment for an existing customer |
 
 The booking body takes `service` (id), `employee` (id), `customer` (existing customer id), `date` (`YYYY-MM-DD`), and `time` (`HH:mm`). Optional fields are `location` (id) and `status` (int). The customer must already exist. there is no inline-customer create on this endpoint, so call `POST /customers` first.
 

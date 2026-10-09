@@ -20,6 +20,7 @@ export class TrafftClient {
   private readonly clientSecret: string;
   private readonly timeoutMs: number;
   private token: string | null = null;
+  private authInFlight: Promise<void> | null = null;
 
   constructor(opts: {
     apiUrl: string;
@@ -36,11 +37,17 @@ export class TrafftClient {
     this.timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
-  /**
-   * Exchange client credentials for a Bearer token via the OAuth2
-   * client-credentials grant. The body is form-encoded, not JSON.
-   */
+  // OAuth2 client-credentials grant, form-encoded. Single-flight so concurrent
+  // callers share one in-flight token request and never stampede a refresh.
   async authenticate(): Promise<void> {
+    if (this.authInFlight) return this.authInFlight;
+    this.authInFlight = this.requestToken().finally(() => {
+      this.authInFlight = null;
+    });
+    return this.authInFlight;
+  }
+
+  private async requestToken(): Promise<void> {
     const form = new URLSearchParams({
       grant_type: "client_credentials",
       client_id: this.clientId,

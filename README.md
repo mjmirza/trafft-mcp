@@ -41,7 +41,7 @@ Once it is connected, you talk to your assistant normally and it acts on your re
 - "Book a strategy session for Sarah on Monday at 2pm."
 - "Which slots are free for a consultation this Friday?"
 - "Add a new customer, Max, max@example.com."
-- "Show me every coupon and how many times it was used."
+- "Create a 10 percent coupon called LAUNCH."
 
 No code. No dashboards. No clicking through screens.
 
