@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://github.com/mjmirza/trafft-mcp/actions/workflows/ci.yml/badge.svg" alt="CI" />
-  <img src="https://img.shields.io/badge/license-MIT-2ea44f.svg" alt="License MIT" />
+  <img src="https://img.shields.io/badge/license-OpenRoots_ORL_1.1-2ea44f.svg" alt="License OpenRoots ORL 1.1" />
   <img src="https://img.shields.io/badge/node-%3E%3D18-2ea44f.svg" alt="Node 18 or newer" />
   <img src="https://img.shields.io/badge/MCP-server-2ea44f.svg" alt="MCP server" />
   <img src="https://img.shields.io/badge/PRs-welcome-2ea44f.svg" alt="PRs welcome" />
@@ -274,6 +274,6 @@ Thank you for using it and for sharing it.
 
 ## License and trademarks
 
-Released under the [MIT License](LICENSE). Free to use, copy, modify, and distribute.
+Source-available under the [OpenRoots License 1.1](LICENSE). Free to use below USD 2 million annual revenue, and it converts to Apache 2.0 on the sunset date in the license. See [docs/LICENSING.md](docs/LICENSING.md).
 
 Trafft and the Trafft logo are trademarks of their owner. This project is independent and not affiliated with, endorsed by, or sponsored by Trafft. The logo appears here under nominative fair use to identify the platform this tool connects to. Full evaluation in [docs/LICENSING.md](docs/LICENSING.md).
