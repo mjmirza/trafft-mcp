@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/trafft-logo.svg" alt="Trafft" width="180" />
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/trafft-logo.png" alt="Trafft" width="210" />
 </p>
 
 <h1 align="center">trafft-mcp</h1>
@@ -44,6 +44,19 @@ Once it is connected, you talk to your assistant normally and it acts on your re
 - "Create a 10 percent coupon called LAUNCH."
 
 No code. No dashboards. No clicking through screens.
+
+## See it working
+
+Every endpoint is verified live against a real Trafft instance. The bundled auditor logs in and probes each one, so you know the connection is healthy before you rely on it. Sensitive values are masked in these images.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/audit.png" alt="trafft-mcp live audit, seven endpoints passing" width="520" />
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/tools.png" alt="The 17 trafft-mcp tools" width="520" />
+  <img src="https://raw.githubusercontent.com/mjmirza/trafft-mcp/main/assets/call.png" alt="A live list_services tool call" width="520" />
+</p>
 
 ## Where to find your credentials
 
