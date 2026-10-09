@@ -4,6 +4,15 @@
   "description": "Model Context Protocol server for the Trafft booking platform. Talk to your Trafft calendar from any MCP client.",
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",
+  "author": "Mirza Iqbal",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mjmirza/trafft-mcp.git"
+  },
+  "homepage": "https://github.com/mjmirza/trafft-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/mjmirza/trafft-mcp/issues"
+  },
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -18,7 +27,7 @@
     "trafft-mcp": "./build/index.js"
   },
   "files": [
-    "build",
+    "build/**/*.js",
     "README.md",
     "LICENSE"
   ],
@@ -29,7 +38,8 @@
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "audit": "node build/audit.js",
     "audit:deep": "node build/audit.js --deep",
-    "deadcode": "npx -y fallow@2.88.2 dead-code"
+    "deadcode": "npx -y fallow@2.88.2 dead-code",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
