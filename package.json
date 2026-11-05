@@ -1,6 +1,6 @@
 {
   "name": "trafft-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Model Context Protocol server for the Trafft booking platform. Talk to your Trafft calendar from any MCP client.",
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",
@@ -44,7 +44,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "dotenv": "^17.4.2",
     "zod": "^4.6.5"
   },
@@ -56,10 +56,10 @@
     "node": ">=18"
   },
   "overrides": {
-    "qs": "6.16.0",
-    "proxy-addr": "2.0.8",
-    "hono": "4.13.13",
-    "ip-address": "10.7.3",
-    "fast-uri": "3.1.8"
+    "qs": "^6.17.1",
+    "proxy-addr": "^2.0.8",
+    "hono": "^4.13.16",
+    "ip-address": "^10.7.6",
+    "fast-uri": "^3.1.9"
   }
 }
