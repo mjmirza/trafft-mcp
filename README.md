@@ -200,7 +200,7 @@ sequenceDiagram
 | `list_services` | List bookable services, durations, and prices |
 | `get_service` | Fetch one service |
 | `get_available_times` | Upcoming open slots for a service, grouped by date |
-| `list_appointments` | List appointments, filtered by status, with paging |
+| `list_appointments` | List appointments, filtered by status or a local date range, with paging |
 | `cancel_appointment` | Cancel an appointment (destructive) |
 | `create_booking` | Book an appointment for an existing customer |
 | `create_coupon` | Create a discount coupon |

@@ -93,6 +93,8 @@ Customer list has no server-side search. page through with `page` and `limit`.
 
 There is no single-appointment GET (`GET /appointments/{id}` returns 405). Read one from the list.
 
+`list_appointments` still accepts `dateFrom` and `dateTo` (`YYYY-MM-DD`, inclusive). Those values are not sent as query parameters, because the API returns 422 for them. The tool reads up to 10 pages and keeps appointments whose `start_date_time` falls in the range. The calendar date is the one in that field, with no timezone conversion. When the scan stops early the result includes `incomplete: true` and `resumePage`. Call again with that page and the same dates. `limit` during a date scan is also the maximum number of matches returned, and it is capped at 100.
+
 ### Bookings
 
 | Method | Path | Purpose |

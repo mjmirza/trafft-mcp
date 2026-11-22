@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `list_appointments` accepts `dateFrom` and `dateTo`. Trafft rejects date query parameters, so the tool reads up to 10 pages and keeps appointments whose `start_date_time` falls in that inclusive range. The result includes `resumePage` when further pages were not read.
+
 ## [1.0.1] - 2026-11-05
 
 ### Security
